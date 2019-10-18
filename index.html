@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Routing with GTFS (General Transit Feed Specification) Data • gtfsrouter</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Routing with GTFS (General Transit Feed Specification) Data">
 <meta property="og:description" content="Use GTFS (General Transit Feed Specification) data for routing from
     nominated start and end stations, and for extracting isochrones from
@@ -20,7 +21,7 @@
 <![endif]-->
 </head>
 <body>
-    <div class="container template-article">
+    <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -32,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">gtfsrouter</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1.2</span>
       </span>
     </div>
 
@@ -64,12 +65,10 @@
 <!--/.navbar -->
 
       
-      </header><div class="row">
-  <div class="col-md-9 contents">
-    
 
-    
-    
+      </header><div class="row">
+  <div class="contents col-md-9">
+
 
 <div id="gtfs-router" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
@@ -79,21 +78,21 @@
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>To install:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">remotes<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/remotes/topics/install_github">install_github</a></span>(<span class="st">"atfutures/gtfs-router"</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">remotes<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/remotes/man/install_github.html">install_github</a></span>(<span class="st">"atfutures/gtfs-router"</span>)</a></code></pre></div>
 <p>To load the package and check the version:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(gtfsrouter)</a>
-<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/packageDescription">packageVersion</a></span>(<span class="st">"gtfsrouter"</span>)</a></code></pre></div>
-<pre><code>## [1] '0.0.1'</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(gtfsrouter)</a>
+<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/utils/packageDescription.html">packageVersion</a></span>(<span class="st">"gtfsrouter"</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">## [1] '0.0.1'</a></code></pre></div>
 </div>
 <div id="main-functions" class="section level2">
 <h2 class="hasAnchor">
 <a href="#main-functions" class="anchor"></a>Main functions</h2>
 <p>The main functions can be demonstrated with sample data included with the package from Berlin (the Verkehrverbund Berlin Brandenburg, or VBB). GTFS data are always stored as <code>.zip</code> files, and these sample data can be written to local storage with the function <code><a href="reference/berlin_gtfs_to_zip.html">berlin_gtfs_to_zip()</a></code>.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw"><a href="reference/berlin_gtfs_to_zip.html">berlin_gtfs_to_zip</a></span>()</a>
-<a class="sourceLine" id="cb4-2" data-line-number="2">tempfiles &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list.files">list.files</a></span> (<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/tempfile">tempdir</a></span> (), <span class="dt">full.names =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb4-3" data-line-number="3">filename &lt;-<span class="st"> </span>tempfiles [<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/grep">grep</a></span> (<span class="st">"vbb.zip"</span>, tempfiles)]</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2">tempfiles &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span> (<span class="kw"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span> (), <span class="dt">full.names =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb4-3" data-line-number="3">filename &lt;-<span class="st"> </span>tempfiles [<span class="kw"><a href="https://rdrr.io/r/base/grep.html">grep</a></span> (<span class="st">"vbb.zip"</span>, tempfiles)]</a>
 <a class="sourceLine" id="cb4-4" data-line-number="4">filename</a></code></pre></div>
-<pre><code>## [1] "/tmp/Rtmp75tFIx/vbb.zip"</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">## [1] "/tmp/Rtmpz6vX0h/vbb.zip"</a></code></pre></div>
 <p>For normal package use, <code>filename</code> will specify the name of the local GTFS data stored as a single <code>.zip</code> file.</p>
 <div id="gtfs_route" class="section level3">
 <h3 class="hasAnchor">
@@ -105,7 +104,7 @@
 <a class="sourceLine" id="cb6-4" data-line-number="4">            <span class="dt">from =</span> <span class="st">"Schonlein"</span>,</a>
 <a class="sourceLine" id="cb6-5" data-line-number="5">            <span class="dt">to =</span> <span class="st">"Berlin Hauptbahnhof"</span>,</a>
 <a class="sourceLine" id="cb6-6" data-line-number="6">            <span class="dt">start_time =</span> <span class="dv">12</span> <span class="op">*</span><span class="st"> </span><span class="dv">3600</span> <span class="op">+</span><span class="st"> </span><span class="dv">120</span>) <span class="co"># 12:02 in seconds</span></a></code></pre></div>
-<table class="table table">
+<table class="table">
 <thead><tr class="header">
 <th align="left">route_name</th>
 <th align="left">trip_name</th>
@@ -198,8 +197,8 @@
 <a class="sourceLine" id="cb7-5" data-line-number="5">                     <span class="dt">start_time =</span> <span class="dv">12</span> <span class="op">*</span><span class="st"> </span><span class="dv">3600</span> <span class="op">+</span><span class="st"> </span><span class="dv">120</span>,</a>
 <a class="sourceLine" id="cb7-6" data-line-number="6">                     <span class="dt">end_time =</span> <span class="dv">12</span> <span class="op">*</span><span class="st"> </span><span class="dv">3600</span> <span class="op">+</span><span class="st"> </span><span class="dv">720</span>) <span class="co"># 10 minutes later</span></a></code></pre></div>
 <p>The function returns an object of class <code>gtfs_isochrone</code> containing <a href="https://github.com/r-spatial/sf"><code>sf</code></a>-formatted sets of start and end points, along with all intermediate (“mid”) points, and routes. An additional item contains the non-convex (alpha) hull enclosing the routed points. This requires the packages <a href="https://github.com/hypertidy/geodist"><code>geodist</code></a>, <a href="https://cran.r-project.org/package=sf"><code>sf</code></a>, <a href="https://cran.r-project.org/package=alphahull"><code>alphahull</code></a>, and <a href="https://cran.r-project.org/package=mapview"><code>mapview</code></a> to be installed. Isochrone objects have their own plot method:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/plot">plot</a></span> (x)</a></code></pre></div>
-<p><img src="articles/isochrone.png"></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span> (x)</a></code></pre></div>
+<p><img src="./vignettes/isochrone.png"></p>
 <p>The isochrone hull also quantifies its total area and width-to-length ratio.</p>
 </div>
 </div>
@@ -209,6 +208,7 @@
 <p>For background information, see <a href="http://gtfs.org"><code>gtfs.org</code></a>, and particularly their <a href="https://docs.google.com/document/d/16inL5BVcM1aU-_DcFJay_tC6Ni0wPa0nvQEstueG5k4/edit">GTFS Examples</a>. The VBB is strictly schedule-only, so has no <code>"frequencies.txt"</code> file (this file defines “service periods”, and overrides any schedule information during the specified times).</p>
 </div>
 </div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -236,7 +236,7 @@
 </ul>
 </div>
 
-      <div class="dev-status">
+  <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://travis-ci.org/ATFutures/gtfs-router"><img src="https://travis-ci.org/ATFutures/gtfs-router.svg" alt="Build Status"></a></li>
@@ -248,7 +248,6 @@
 </ul>
 </div>
 </div>
-
 </div>
 
 
@@ -257,12 +256,14 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>

@@ -103,6 +103,41 @@ extract_gtfs <- function (filename = NULL)
     return (res)
 }
 
+#' interpolate_transfers
+#'
+#' Interpolates transfers based on allowable time and stop proximity.
+#'
+#' @param gtfs A set of GTFS data returned from \link{extract_gtfs}
+#' @param max_transfer_time The maximum walking time in seconds to allow a transfer between stops
+#' @param walking_speed The walking speed in m/s to be used when calculating transfer times
+#' @return An object of class `gtfs`
+#'
+#' @export
+interpolate_transfers <- function(gtfs, max_transfer_time, walking_speed = 1.39)
+{
+    requireNamespace ("geodist")
+    
+    # Create a travel time matrix with all stops and select only those elements that are
+    # considered transfers
+    times <- geodist::geodist(gtfs$stops) / walking_speed
+    transfer_times <- times [times <= max_transfer_time]
+    
+    # Define the departure and arrival stop of each transfer
+    stop_ids <- which (times <= max_transfer_time, arr.ind = TRUE)
+    from_stops <- gtfs$stops [stop_ids [, 1], "stop_id"]
+    to_stops <- gtfs$stops [stop_ids [, 2], "stop_id"]
+    
+    # Convert to a long format data table and set as transfers component of the GTFS.
+    # Transfer type 2 means: requires a minimum amount of time between arrival and departure 
+    # to ensure a connection. The time required to transfer is specified by min_transfer_time.
+    gtfs$transfers = data.table::as.data.table(list("from_stop_id" = from_stops,
+                                                    "to_stop_id" = to_stops,
+                                                    "transfer_type" = 2,
+                                                    "min_transfer_time" = transfer_times))
+    
+    return (gtfs)
+}
+
 
 type_missing <- function (flist, type)
 {

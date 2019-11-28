@@ -130,7 +130,7 @@ interpolate_transfers <- function (gtfs, max_transfer_time, walking_speed = 1.39
     # Convert to a long format data table and set as transfers component of the GTFS.
     # Transfer type 2 means: requires a minimum amount of time between arrival and departure 
     # to ensure a connection. The time required to transfer is specified by min_transfer_time.
-    gtfs$transfers = data.table::as.data.table (list (from_stop_id = from_stops,
+    gtfs$transfers <- data.table::as.data.table (list (from_stop_id = from_stops,
                                                       to_stop_id = to_stops,
                                                       transfer_type = 2,
                                                       min_transfer_time = transfer_times))

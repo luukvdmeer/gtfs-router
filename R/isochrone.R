@@ -282,3 +282,155 @@ plot.gtfs_isochrone <- function (x, ...)
     print (m)
     invisible (m)
 }
+
+#' fmlm_isochrone
+#'
+#' Calculate a single isochrone from a given location and time, returning the area
+#' reachable before the specified `end_time`. Reachable in this sense includes a 
+#' 'first mile' leg, followed by a public transportation trip, followed by a
+#' 'last mile' leg.
+#'
+#' @param gtfs A set of GTFS data returned from \link{extract_gtfs} or, for more
+#' efficient queries, pre-processed with \link{gtfs_timetable}.
+#' @param from_lon Longitude coordinate of start location
+#' @param from_lat Latitude coordinate of start location
+#' @param start_time Desired departure time at start location, either in seconds
+#' after midnight, a vector of two or three integers (hours, minutes) or (hours,
+#' minutes, seconds), an object of class \link{difftime}, \pkg{hms}, or
+#' \pkg{lubridate}.
+#' @param end_time End time to calculate isochrone
+#' @param max_fm_time Maximum amount of time, in seconds, allowed to walk to a 
+#' station, before starting a public transport trip
+#' @param fm_speed The walking speed in m/s to be used when calculating first mile times
+#' @param max_lm_time Maximum amount of time, in seconds, allowed to walk from a
+#' station, after finishing a public transport trip
+#' @param lm_speed The walking speed in m/s to be used when calculating last mile times
+#' @param route_pattern Using only those routes matching given pattern, for
+#' example, "^U" for routes starting with "U" (as commonly used for underground
+#' or subway routes. (Parameter not used at all if `gtfs` has already been
+#' prepared with \link{gtfs_timetable}.)
+#' 
+#' @inheritParams gtfs_route
+#'
+#' @return An \pkg{sf}-formatted polygon representing the reachable area.
+#'
+#' @export
+fmlm_isochrone <- function (gtfs, from_lat, from_lon, start_time, end_time, max_fm_time,
+                            fm_speed = 1.39, max_lm_time = max_fm_time, lm_speed = fm_speed,
+                            route_pattern = NULL, day = NULL, quiet = FALSE)
+{
+    requireNamespace ("geodist")
+    requireNamespace ("sf")
+    
+    if (!"timetable" %in% names (gtfs))
+        gtfs <- gtfs_timetable (gtfs, day, route_pattern, quiet = quiet)
+    
+    # IMPORTANT: data.table works entirely by reference, so all operations
+    # change original values unless first copied! This function thus returns a
+    # copy even when it does nothing else, so always entails some cost.
+    gtfs_cp <- data.table::copy (gtfs)
+    
+    # no visible binding note:
+    departure_time <- NULL
+    
+    # Convert start time and end time
+    start_time <- convert_time (start_time)
+    end_time <- convert_time (end_time)
+    
+    # Create the start location as a virtual stop in the public transport system
+    from_stop_num <- nrow (gtfs_cp$stops) + 1
+    from_stop <- list (stop_id = as (from_stop_num, class (gtfs_cp$stops$stop_id)),
+                       stop_name = "start location",
+                       stop_lat = from_lat,
+                       stop_lon = from_lon)
+    
+    # Create a travel time matrix from the start location to all stops and select only 
+    # those stops that are reachable within max_fm_time
+    times <- geodist::geodist (from_stop, gtfs_cp$stops) / fm_speed
+    fm_times <- times [times <= max_fm_time]
+    fm_stops_num <- which (times <= max_fm_time, arr.ind = TRUE) [, 2]
+    
+    # Create virtual trips in the public transport system from the start location to
+    # the reachable stops
+    trips <- do.call(rbind, lapply (seq (fm_times), function (i)
+    {
+        data.table::as.data.table (list (departure_station = from_stop_num,
+                                         arrival_station = fm_stops_num [i],
+                                         departure_time = start_time,
+                                         arrival_time = start_time + fm_times [i],
+                                         trip_id = nrow (gtfs_cp$trip_ids) + i))
+    }))
+    
+    # Add the virtual start stop to the stops and stop_ids files of the GTFS
+    gtfs_cp$stops <- rbind (gtfs_cp$stops, from_stop)
+    gtfs_cp$stop_ids <- rbind (gtfs_cp$stop_ids, list (stop_ids = from_stop$stop_id))
+    
+    # Add the virtual trips to the trip_ids file of the GTFS
+    trip_ids <- trips [, "trip_id"]
+    data.table::setnames (trip_ids, "trip_id", "trip_ids")
+    gtfs_cp$trip_ids <- rbind (gtfs_cp$trip_ids, trip_ids)
+    
+    # Update the timetable of the GTFS with the new connections
+    tt <- rbind (gtfs_cp$timetable, trips)
+    gtfs_cp$timetable <- tt [order (tt$departure_time), ]
+    
+    # Subset the timetable
+    gtfs_cp$timetable <- gtfs_cp$timetable [departure_time >= start_time, ]
+    if (nrow (gtfs_cp$timetable) == 0)
+        stop ("There are no scheduled services after that time.")
+    
+    # no visible binding note:
+    stations <- NULL 
+    
+    # Calculate all possible journeys one can make
+    isotrips <- get_fmlm_isotrips (gtfs_cp, from_stop_num, start_time, end_time)
+    
+    # List all stops that can be reached, with the earliest arrival time at that stop
+    stops <- do.call (rbind, isotrips) [, list (arrival_time = min (arrival_time)), by = stop_id]
+    
+    # Calculate the resulting time and distance that is left for the last mile
+    stops [, res_time := end_time - arrival_time]
+    stops [res_time > max_lm_time, res_time := max_lm_time] # never more time for lm than max_lm_time
+    stops [stop_id == from_stop$stop_id, res_time := max_fm_time] # walking from start location is fm
+    stops [, res_dist := res_time * lm_speed]
+    
+    # Retrieve the geographical coordinates for each reachable stop
+    stop_coords <- do.call(rbind, lapply (stops$stop_id, function(x)
+    {
+        gtfs_cp$stops [match (x, gtfs_cp$stops [, stop_id]), list(stop_lat, stop_lon)]
+    }))
+    stops <- cbind(stops, stop_coords)
+    
+    # Convert to a simple feature object and project
+    stops_sf <- sf::st_as_sf (stops, coords = c ("stop_lon", "stop_lat"), crs = 4326)
+    stops_sf_proj <- sf::st_transform (stops_sf, 3035)
+    
+    # Draw last mile buffers around the reachable stops
+    res <- sf::st_buffer (stops_sf_proj, dist = stops_sf_proj$res_dist)
+    res <- sf::st_as_sf (sf::st_union (res)) # merge buffers together
+    
+    return (res)
+}
+
+get_fmlm_isotrips <- function (gtfs, start_stns, start_time, end_time)
+{
+    # no visible binding note:
+    stop_id <- trip_id <- NULL
+    
+    stns <- rcpp_csa_isochrone (gtfs$timetable, gtfs$transfers,
+                                nrow (gtfs$stop_ids), nrow (gtfs$trip_ids),
+                                start_stns, start_time, end_time)
+    if (length (stns) < 2)
+        stop ("No isochrone possible") # nocov
+
+    index <- 2 * 1:((length (stns) - 1) / 2) - 1
+    times <- stns [index + 1]
+    stns <- stns [index]
+    
+    stop_ids <- lapply (stns, function (i) gtfs$stop_ids [i] [, stop_ids])
+    
+    lapply (seq (stop_ids), function (i)
+    {
+        data.table::as.data.table (list (stop_id = stop_ids [[i]], arrival_time = times [[i]]))
+    })
+}

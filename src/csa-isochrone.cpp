@@ -153,14 +153,14 @@ Rcpp::List rcpp_csa_isochrone (Rcpp::DataFrame timetable,
     {
         std::vector <int> trip_out, end_station_out;
         size_t i = es;
-        trip_out.push_back (static_cast <int> (current_trip [i]));
+        trip_out.push_back (static_cast <int> (earliest_connection [i]));
         end_station_out.push_back (static_cast <int> (i));
         while (i < INFINITE_INT)
         {
             i = prev_stn [static_cast <size_t> (i)];
             end_station_out.push_back (static_cast <int> (i));
             if (i < INFINITE_INT)
-                trip_out.push_back (static_cast <int> (current_trip [i]));
+                trip_out.push_back (static_cast <int> (earliest_connection [i]));
         }
         end_station_out.resize (end_station_out.size () - 1);
         std::reverse (end_station_out.begin (), end_station_out.end ());
